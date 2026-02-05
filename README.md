@@ -2,6 +2,21 @@
 
 A self-hosted web application for managing your personal book collection with Open Library API integration.
 
+## Deployment Options
+
+### ⚡ Quick Deploy to Vercel (Recommended)
+Deploy the full-stack app to Vercel with Neon Postgres in minutes:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/BlackPixelForge/bookshelf)
+
+**See [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) for detailed instructions.**
+
+### 🐳 Self-Host with Docker
+Run locally or on your own server:
+```bash
+docker-compose up -d
+```
+
 ## Features
 
 - **User Authentication**: Secure login/register with JWT tokens stored in httpOnly cookies
@@ -13,8 +28,8 @@ A self-hosted web application for managing your personal book collection with Op
 
 ## Tech Stack
 
-- **Backend**: Node.js, Express, TypeScript
-- **Database**: SQLite with better-sqlite3
+- **Backend**: Node.js with Express (local) or Vercel Serverless Functions (cloud)
+- **Database**: SQLite (local) or Neon Postgres (Vercel)
 - **Frontend**: React, TypeScript, Vite
 - **Styling**: Tailwind CSS
 - **UI Components**: Headless UI, Lucide icons

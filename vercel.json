@@ -1,0 +1,49 @@
+{
+  "version": 2,
+  "buildCommand": "cd client && npm install && npm run build",
+  "outputDirectory": "client/dist",
+  "installCommand": "npm install",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/api/auth/register",
+      "destination": "/api/auth/register"
+    },
+    {
+      "source": "/api/auth/login",
+      "destination": "/api/auth/login"
+    },
+    {
+      "source": "/api/auth/logout",
+      "destination": "/api/auth/logout"
+    },
+    {
+      "source": "/api/auth/me",
+      "destination": "/api/auth/me"
+    },
+    {
+      "source": "/api/books",
+      "destination": "/api/books/index"
+    },
+    {
+      "source": "/api/books/:id",
+      "destination": "/api/books/[id]"
+    },
+    {
+      "source": "/api/search",
+      "destination": "/api/search/index"
+    },
+    {
+      "source": "/api/search/isbn/:isbn",
+      "destination": "/api/search/isbn/[isbn]"
+    },
+    {
+      "source": "/api/tags",
+      "destination": "/api/tags/index"
+    },
+    {
+      "source": "/api/tags/:id",
+      "destination": "/api/tags/[id]"
+    }
+  ]
+}
