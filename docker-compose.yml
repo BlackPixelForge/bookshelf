@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  bookshelf:
+    build: .
+    ports:
+      - "3001:3001"
+    volumes:
+      - bookshelf-data:/app/data
+    environment:
+      - JWT_SECRET=change-this-to-a-secure-random-string
+      - NODE_ENV=production
+    restart: unless-stopped
+
+volumes:
+  bookshelf-data:
