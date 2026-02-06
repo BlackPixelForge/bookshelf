@@ -16,7 +16,8 @@ router.get(
   async (req: AuthRequest, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      const msgs = errors.array().map((e) => e.msg);
+      return res.status(400).json({ error: msgs.join(', '), errors: errors.array() });
     }
 
     const searchQuery = req.query.q as string;
@@ -38,7 +39,8 @@ router.get(
   async (req: AuthRequest, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      const msgs = errors.array().map((e) => e.msg);
+      return res.status(400).json({ error: msgs.join(', '), errors: errors.array() });
     }
 
     const { isbn } = req.params;
