@@ -12,6 +12,14 @@ async function updateTag(req: AuthRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Tag ID required' });
   }
 
+  // Validate inputs
+  if (name !== undefined && (typeof name !== 'string' || name.trim().length === 0 || name.length > 50)) {
+    return res.status(400).json({ error: 'Tag name must be a non-empty string (max 50 chars)' });
+  }
+  if (color !== undefined && (typeof color !== 'string' || !/^#[0-9A-Fa-f]{6}$/.test(color))) {
+    return res.status(400).json({ error: 'Color must be a valid hex color (e.g. #6366f1)' });
+  }
+
   try {
     // Check ownership
     const existing = await sql`
@@ -34,15 +42,12 @@ async function updateTag(req: AuthRequest, res: VercelResponse) {
       }
     }
 
-    // Update tag
-    if (name !== undefined || color !== undefined) {
-      await sql`
-        UPDATE tags
-        SET
-          name = COALESCE(${name || null}, name),
-          color = COALESCE(${color || null}, color)
-        WHERE id = ${tagId}
-      `;
+    // Update tag fields individually
+    if (name !== undefined) {
+      await sql`UPDATE tags SET name = ${name} WHERE id = ${tagId}`;
+    }
+    if (color !== undefined) {
+      await sql`UPDATE tags SET color = ${color} WHERE id = ${tagId}`;
     }
 
     const result = await sql`SELECT * FROM tags WHERE id = ${tagId}`;

@@ -49,8 +49,8 @@ export async function initDatabase(): Promise<Database> {
       isbn_13 TEXT,
       genres TEXT,
       cover_url TEXT,
-      status TEXT DEFAULT 'unread',
-      rating INTEGER,
+      status TEXT DEFAULT 'unread' CHECK (status IN ('unread', 'in_progress', 'completed')),
+      rating INTEGER CHECK (rating IS NULL OR (rating >= 1 AND rating <= 5)),
       notes TEXT,
       added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -93,7 +93,16 @@ export function saveDatabase(): void {
   if (db) {
     const data = db.export();
     const buffer = Buffer.from(data);
-    fs.writeFileSync(dbPath, buffer);
+    // Atomic write: write to temp file then rename
+    const tmpPath = dbPath + '.tmp.' + process.pid;
+    try {
+      fs.writeFileSync(tmpPath, buffer);
+      fs.renameSync(tmpPath, dbPath);
+    } catch (err) {
+      // Clean up temp file on failure
+      try { fs.unlinkSync(tmpPath); } catch {}
+      throw err;
+    }
   }
 }
 
@@ -118,43 +127,48 @@ export function runQuery(sql: string, params: any[] = []): { changes: number; la
 export function getOne<T>(sql: string, params: any[] = []): T | undefined {
   const database = getDatabase();
   const stmt = database.prepare(sql);
-  stmt.bind(params);
+  try {
+    stmt.bind(params);
 
-  if (stmt.step()) {
-    const columns = stmt.getColumnNames();
-    const values = stmt.get();
+    if (stmt.step()) {
+      const columns = stmt.getColumnNames();
+      const values = stmt.get();
+
+      const row: any = {};
+      columns.forEach((col: string, i: number) => {
+        row[col] = values[i];
+      });
+      return row as T;
+    }
+
+    return undefined;
+  } finally {
     stmt.free();
-
-    const row: any = {};
-    columns.forEach((col: string, i: number) => {
-      row[col] = values[i];
-    });
-    return row as T;
   }
-
-  stmt.free();
-  return undefined;
 }
 
 export function getAll<T>(sql: string, params: any[] = []): T[] {
   const database = getDatabase();
   const stmt = database.prepare(sql);
-  stmt.bind(params);
+  try {
+    stmt.bind(params);
 
-  const results: T[] = [];
-  const columns = stmt.getColumnNames();
+    const results: T[] = [];
+    const columns = stmt.getColumnNames();
 
-  while (stmt.step()) {
-    const values = stmt.get();
-    const row: any = {};
-    columns.forEach((col: string, i: number) => {
-      row[col] = values[i];
-    });
-    results.push(row as T);
+    while (stmt.step()) {
+      const values = stmt.get();
+      const row: any = {};
+      columns.forEach((col: string, i: number) => {
+        row[col] = values[i];
+      });
+      results.push(row as T);
+    }
+
+    return results;
+  } finally {
+    stmt.free();
   }
-
-  stmt.free();
-  return results;
 }
 
 export default { initDatabase, getDatabase, saveDatabase, runQuery, getOne, getAll };

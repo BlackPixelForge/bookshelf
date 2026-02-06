@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Dialog } from '@headlessui/react';
 import { Book, Tag, BookInput } from '../api/client';
-import { X, Star, Trash2, BookOpen, Clock, CheckCircle, Loader2 } from 'lucide-react';
+import { X, Star, Trash2, BookOpen, Clock, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
 
 interface BookModalProps {
   book: Book | null;
@@ -26,6 +26,7 @@ export function BookModal({ book, tags, isOpen, onClose, onSave, onDelete }: Boo
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     if (book) {
@@ -40,11 +41,12 @@ export function BookModal({ book, tags, isOpen, onClose, onSave, onDelete }: Boo
 
   async function handleSave() {
     setSaving(true);
+    setSaveError(null);
     try {
       await onSave(book!.id, { status, rating: rating ?? undefined, notes, tags: selectedTags });
       onClose();
     } catch (err) {
-      console.error('Save error:', err);
+      setSaveError(err instanceof Error ? err.message : 'Failed to save changes');
     } finally {
       setSaving(false);
     }
@@ -52,11 +54,12 @@ export function BookModal({ book, tags, isOpen, onClose, onSave, onDelete }: Boo
 
   async function handleDelete() {
     setDeleting(true);
+    setSaveError(null);
     try {
       await onDelete(book!.id);
       onClose();
     } catch (err) {
-      console.error('Delete error:', err);
+      setSaveError(err instanceof Error ? err.message : 'Failed to delete book');
     } finally {
       setDeleting(false);
       setShowDeleteConfirm(false);
@@ -208,6 +211,13 @@ export function BookModal({ book, tags, isOpen, onClose, onSave, onDelete }: Boo
                 placeholder="Add your notes about this book..."
               />
             </div>
+
+            {saveError && (
+              <div className="flex items-center gap-2 p-3 bg-red-900/30 border border-red-800 rounded-lg text-red-400 text-sm">
+                <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                {saveError}
+              </div>
+            )}
 
             <div className="flex justify-between pt-4 border-t border-gray-800">
               {showDeleteConfirm ? (

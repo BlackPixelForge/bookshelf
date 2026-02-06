@@ -3,7 +3,9 @@ import jwt from 'jsonwebtoken';
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { AuthRequest } from './types';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'bookshelf-secret-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production'
+  ? (() => { throw new Error('JWT_SECRET environment variable is required in production'); })()
+  : 'bookshelf-secret-change-in-production');
 const SALT_ROUNDS = 12;
 
 export async function hashPassword(password: string): Promise<string> {
@@ -24,7 +26,7 @@ export function generateToken(userId: number, email: string): string {
 
 export function verifyToken(token: string): { id: number; email: string } | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as { id: number; email: string };
+    return jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }) as { id: number; email: string };
   } catch {
     return null;
   }
@@ -34,7 +36,8 @@ export const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
   sameSite: 'strict' as const,
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days (milliseconds, for Express)
+  maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days (seconds, for raw Set-Cookie header)
   path: '/',
 };
 
@@ -48,7 +51,10 @@ export function withAuth(
     const cookieHeader = req.headers.cookie;
     if (cookieHeader) {
       cookieHeader.split(';').forEach(cookie => {
-        const [key, value] = cookie.trim().split('=');
+        const idx = cookie.indexOf('=');
+        if (idx === -1) return;
+        const key = cookie.substring(0, idx).trim();
+        const value = cookie.substring(idx + 1).trim();
         cookies[key] = value;
       });
     }
@@ -72,11 +78,12 @@ export function withAuth(
 // Helper to set cookie in response
 export function setCookie(res: VercelResponse, name: string, value: string) {
   const options = cookieOptions;
-  const cookieString = `${name}=${value}; Path=${options.path}; Max-Age=${options.maxAge}; HttpOnly; ${options.secure ? 'Secure;' : ''} SameSite=${options.sameSite}`;
+  const cookieString = `${name}=${value}; Path=${options.path}; Max-Age=${options.maxAgeSeconds}; HttpOnly; ${options.secure ? 'Secure; ' : ''}SameSite=${options.sameSite}`;
   res.setHeader('Set-Cookie', cookieString);
 }
 
 // Helper to clear cookie
 export function clearCookie(res: VercelResponse, name: string) {
-  res.setHeader('Set-Cookie', `${name}=; Path=/; Max-Age=0`);
+  const options = cookieOptions;
+  res.setHeader('Set-Cookie', `${name}=; Path=${options.path}; Max-Age=0; HttpOnly; ${options.secure ? 'Secure; ' : ''}SameSite=${options.sameSite}`);
 }

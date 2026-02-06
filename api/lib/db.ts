@@ -35,8 +35,8 @@ export async function initDatabase() {
         isbn_13 TEXT,
         genres JSONB,
         cover_url TEXT,
-        status TEXT DEFAULT 'unread',
-        rating INTEGER,
+        status TEXT DEFAULT 'unread' CHECK (status IN ('unread', 'in_progress', 'completed')),
+        rating INTEGER CHECK (rating IS NULL OR (rating >= 1 AND rating <= 5)),
         notes TEXT,
         added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -74,6 +74,6 @@ export async function initDatabase() {
     console.log('Database initialized successfully');
   } catch (error) {
     console.error('Database initialization error:', error);
-    // Don't throw - tables might already exist
+    throw error;
   }
 }
