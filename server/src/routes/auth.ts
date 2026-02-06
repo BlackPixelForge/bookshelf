@@ -17,7 +17,8 @@ router.post(
   async (req: AuthRequest, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      const msgs = errors.array().map((e) => e.msg);
+      return res.status(400).json({ error: msgs.join(', '), errors: errors.array() });
     }
 
     const { email, password } = req.body;
@@ -59,7 +60,8 @@ router.post(
   async (req: AuthRequest, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      const msgs = errors.array().map((e) => e.msg);
+      return res.status(400).json({ error: msgs.join(', '), errors: errors.array() });
     }
 
     const { email, password } = req.body;

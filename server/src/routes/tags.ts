@@ -36,7 +36,8 @@ router.post(
   (req: AuthRequest, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      const msgs = errors.array().map((e) => e.msg);
+      return res.status(400).json({ error: msgs.join(', '), errors: errors.array() });
     }
 
     const userId = req.user!.id;
@@ -79,7 +80,8 @@ router.put(
   (req: AuthRequest, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      const msgs = errors.array().map((e) => e.msg);
+      return res.status(400).json({ error: msgs.join(', '), errors: errors.array() });
     }
 
     const userId = req.user!.id;
@@ -144,7 +146,8 @@ router.delete(
   (req: AuthRequest, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      const msgs = errors.array().map((e) => e.msg);
+      return res.status(400).json({ error: msgs.join(', '), errors: errors.array() });
     }
 
     const userId = req.user!.id;
