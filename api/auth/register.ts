@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { sql } from '../lib/db';
+import { sql, initDatabase } from '../lib/db';
 import { hashPassword, generateToken, setCookie } from '../lib/auth';
 import { checkRateLimit } from '../lib/rateLimit';
 
@@ -34,6 +34,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const normalizedEmail = email.toLowerCase().trim();
 
   try {
+    await initDatabase();
     const passwordHash = await hashPassword(password);
 
     // Use INSERT ... ON CONFLICT to avoid race condition

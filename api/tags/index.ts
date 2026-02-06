@@ -1,5 +1,5 @@
 import { VercelResponse } from '@vercel/node';
-import { sql } from '../lib/db';
+import { sql, initDatabase } from '../lib/db';
 import { withAuth } from '../lib/auth';
 import { AuthRequest, Tag } from '../lib/types';
 
@@ -7,6 +7,7 @@ async function getTags(req: AuthRequest, res: VercelResponse) {
   const userId = req.user!.id;
 
   try {
+    await initDatabase();
     const result = await sql`
       SELECT * FROM tags WHERE user_id = ${userId} ORDER BY name
     `;
@@ -30,6 +31,7 @@ async function createTag(req: AuthRequest, res: VercelResponse) {
   }
 
   try {
+    await initDatabase();
     // Check if tag exists
     const existing = await sql`
       SELECT id FROM tags WHERE user_id = ${userId} AND name = ${name}

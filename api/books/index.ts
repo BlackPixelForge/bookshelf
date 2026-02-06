@@ -1,5 +1,5 @@
 import { VercelResponse } from '@vercel/node';
-import { sql } from '../lib/db';
+import { sql, initDatabase } from '../lib/db';
 import { withAuth } from '../lib/auth';
 import { AuthRequest, Book, Tag } from '../lib/types';
 
@@ -15,6 +15,7 @@ async function getBooks(req: AuthRequest, res: VercelResponse) {
   }
 
   try {
+    await initDatabase();
     const result = await sql`
       SELECT DISTINCT b.* FROM books b
       ${tag ? sql`JOIN book_tags bt ON b.id = bt.book_id` : sql``}
@@ -94,6 +95,7 @@ async function addBook(req: AuthRequest, res: VercelResponse) {
   }
 
   try {
+    await initDatabase();
     const result = await sql`
       INSERT INTO books (
         user_id, title, authors, open_library_key, publication_year,
