@@ -1,5 +1,5 @@
 import { VercelResponse } from '@vercel/node';
-import { sql } from '../lib/db';
+import { sql, initDatabase } from '../lib/db';
 import { withAuth } from '../lib/auth';
 import { AuthRequest } from '../lib/types';
 
@@ -21,6 +21,7 @@ async function updateTag(req: AuthRequest, res: VercelResponse) {
   }
 
   try {
+    await initDatabase();
     // Check ownership
     const existing = await sql`
       SELECT id FROM tags WHERE id = ${tagId} AND user_id = ${userId}
@@ -67,6 +68,7 @@ async function deleteTag(req: AuthRequest, res: VercelResponse) {
   }
 
   try {
+    await initDatabase();
     const result = await sql`
       DELETE FROM tags WHERE id = ${tagId} AND user_id = ${userId}
       RETURNING id

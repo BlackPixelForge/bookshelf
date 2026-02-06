@@ -1,17 +1,25 @@
 import { neon } from '@neondatabase/serverless';
 
-// Get database URL from environment
-const DATABASE_URL = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+// Lazy database connection — avoids crashing the module at load time
+// when DATABASE_URL is not yet configured
+let _sql: ReturnType<typeof neon> | null = null;
 
-if (!DATABASE_URL) {
-  throw new Error('DATABASE_URL or POSTGRES_URL environment variable is required');
+export function sql(strings: TemplateStringsArray, ...values: unknown[]) {
+  if (!_sql) {
+    const DATABASE_URL = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+    if (!DATABASE_URL) {
+      throw new Error('DATABASE_URL or POSTGRES_URL environment variable is required');
+    }
+    _sql = neon(DATABASE_URL);
+  }
+  return _sql(strings, ...values);
 }
 
-// Create database connection
-export const sql = neon(DATABASE_URL);
+// Database schema initialization — cached per serverless instance
+let dbInitialized = false;
 
-// Initialize database schema
 export async function initDatabase() {
+  if (dbInitialized) return;
   try {
     // Create users table
     await sql`
@@ -71,6 +79,7 @@ export async function initDatabase() {
     await sql`CREATE INDEX IF NOT EXISTS idx_books_status ON books(user_id, status)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_tags_user_id ON tags(user_id)`;
 
+    dbInitialized = true;
     console.log('Database initialized successfully');
   } catch (error) {
     console.error('Database initialization error:', error);
