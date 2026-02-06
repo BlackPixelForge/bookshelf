@@ -23,8 +23,8 @@ export function FilterPanel({
   onTagChange,
 }: FilterPanelProps) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
-      <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+    <div className="bg-gray-900 rounded-lg border border-gray-800 p-4">
+      <div className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-3">
         <Filter className="h-4 w-4" />
         Filters
       </div>
@@ -40,7 +40,7 @@ export function FilterPanel({
               className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
                 statusFilter === null
                   ? 'bg-indigo-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
               }`}
             >
               All
@@ -52,7 +52,7 @@ export function FilterPanel({
                 className={`px-3 py-1.5 text-sm rounded-full flex items-center gap-1 transition-colors ${
                   statusFilter === value
                     ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
                 }`}
               >
                 <Icon className="h-3.5 w-3.5" />
@@ -73,7 +73,7 @@ export function FilterPanel({
                 className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
                   tagFilter === null
                     ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
                 }`}
               >
                 All

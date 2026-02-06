@@ -7,9 +7,9 @@ interface BookCardProps {
 }
 
 const statusConfig = {
-  unread: { label: 'Unread', icon: BookOpen, color: 'bg-gray-100 text-gray-700' },
-  in_progress: { label: 'Reading', icon: Clock, color: 'bg-yellow-100 text-yellow-700' },
-  completed: { label: 'Completed', icon: CheckCircle, color: 'bg-green-100 text-green-700' },
+  unread: { label: 'Unread', icon: BookOpen, color: 'bg-gray-700 text-gray-300' },
+  in_progress: { label: 'Reading', icon: Clock, color: 'bg-yellow-900/40 text-yellow-400' },
+  completed: { label: 'Completed', icon: CheckCircle, color: 'bg-green-900/40 text-green-400' },
 };
 
 export function BookCard({ book, onClick }: BookCardProps) {
@@ -19,9 +19,9 @@ export function BookCard({ book, onClick }: BookCardProps) {
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+      className="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden cursor-pointer hover:border-gray-700 hover:bg-gray-900/80 transition-all"
     >
-      <div className="aspect-[2/3] bg-gray-100 relative">
+      <div className="aspect-[2/3] bg-gray-800 relative">
         {book.cover_url ? (
           <img
             src={book.cover_url}
@@ -30,7 +30,7 @@ export function BookCard({ book, onClick }: BookCardProps) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <BookOpen className="h-16 w-16 text-gray-300" />
+            <BookOpen className="h-16 w-16 text-gray-600" />
           </div>
         )}
         <div className={`absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${status.color}`}>
@@ -40,9 +40,9 @@ export function BookCard({ book, onClick }: BookCardProps) {
       </div>
 
       <div className="p-4">
-        <h3 className="font-semibold text-gray-900 line-clamp-2 mb-1">{book.title}</h3>
+        <h3 className="font-semibold text-gray-100 line-clamp-2 mb-1">{book.title}</h3>
         {book.authors.length > 0 && (
-          <p className="text-sm text-gray-500 line-clamp-1">
+          <p className="text-sm text-gray-400 line-clamp-1">
             {book.authors.join(', ')}
           </p>
         )}
@@ -53,7 +53,7 @@ export function BookCard({ book, onClick }: BookCardProps) {
               <Star
                 key={star}
                 className={`h-4 w-4 ${
-                  star <= book.rating! ? 'text-yellow-400 fill-current' : 'text-gray-300'
+                  star <= book.rating! ? 'text-yellow-400 fill-current' : 'text-gray-600'
                 }`}
               />
             ))}
@@ -72,7 +72,7 @@ export function BookCard({ book, onClick }: BookCardProps) {
               </span>
             ))}
             {book.tags.length > 3 && (
-              <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-500">
+              <span className="px-2 py-0.5 text-xs rounded-full bg-gray-800 text-gray-400">
                 +{book.tags.length - 3}
               </span>
             )}

@@ -64,13 +64,13 @@ export function Search() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
+    <div className="min-h-screen bg-gray-950">
+      <header className="bg-gray-900 border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16 gap-4">
             <Link
               to="/"
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+              className="flex items-center gap-2 text-gray-400 hover:text-gray-200"
             >
               <ArrowLeft className="h-5 w-5" />
               Back
@@ -90,17 +90,17 @@ export function Search() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+            <Loader2 className="h-8 w-8 animate-spin text-indigo-400" />
           </div>
         ) : error ? (
           <div className="text-center py-12">
             <AlertCircle className="h-12 w-12 mx-auto text-red-400 mb-4" />
-            <p className="text-red-600">{error}</p>
+            <p className="text-red-400">{error}</p>
           </div>
         ) : results.length === 0 ? (
           <div className="text-center py-12">
-            <BookOpen className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500">
+            <BookOpen className="h-16 w-16 mx-auto text-gray-600 mb-4" />
+            <p className="text-gray-400">
               {query ? 'No books found' : 'Search for books to add to your collection'}
             </p>
           </div>
@@ -118,7 +118,7 @@ export function Search() {
                 return (
                   <div
                     key={book.key}
-                    className="bg-white rounded-lg border border-gray-200 p-4 flex gap-4"
+                    className="bg-gray-900 rounded-lg border border-gray-800 p-4 flex gap-4"
                   >
                     <div className="w-20 flex-shrink-0">
                       {book.coverUrl ? (
@@ -128,16 +128,16 @@ export function Search() {
                           className="w-full rounded shadow"
                         />
                       ) : (
-                        <div className="w-full aspect-[2/3] bg-gray-100 rounded flex items-center justify-center">
-                          <BookOpen className="h-8 w-8 text-gray-300" />
+                        <div className="w-full aspect-[2/3] bg-gray-800 rounded flex items-center justify-center">
+                          <BookOpen className="h-8 w-8 text-gray-600" />
                         </div>
                       )}
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-900">{book.title}</h3>
+                      <h3 className="font-semibold text-gray-100">{book.title}</h3>
                       {book.authors.length > 0 && (
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-400">
                           {book.authors.join(', ')}
                         </p>
                       )}
@@ -149,7 +149,7 @@ export function Search() {
                           {book.genres.slice(0, 3).map((genre, i) => (
                             <span
                               key={i}
-                              className="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded"
+                              className="px-2 py-0.5 text-xs bg-gray-800 text-gray-400 rounded"
                             >
                               {genre}
                             </span>
@@ -164,7 +164,7 @@ export function Search() {
                         disabled={isSaving || isSaved}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                           isSaved
-                            ? 'bg-green-100 text-green-700'
+                            ? 'bg-green-900/40 text-green-400'
                             : 'bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50'
                         }`}
                       >
