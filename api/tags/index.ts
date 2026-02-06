@@ -22,8 +22,11 @@ async function createTag(req: AuthRequest, res: VercelResponse) {
   const userId = req.user!.id;
   const { name, color } = req.body;
 
-  if (!name) {
-    return res.status(400).json({ error: 'Tag name required' });
+  if (!name || typeof name !== 'string' || name.trim().length === 0 || name.length > 50) {
+    return res.status(400).json({ error: 'Tag name is required (max 50 chars)' });
+  }
+  if (color !== undefined && (typeof color !== 'string' || !/^#[0-9A-Fa-f]{6}$/.test(color))) {
+    return res.status(400).json({ error: 'Color must be a valid hex color (e.g. #6366f1)' });
   }
 
   try {

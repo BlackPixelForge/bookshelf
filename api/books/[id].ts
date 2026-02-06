@@ -49,6 +49,18 @@ async function updateBook(req: AuthRequest, res: VercelResponse) {
 
   const { title, authors, status, rating, notes, tags } = req.body;
 
+  // Input validation
+  const VALID_STATUSES = ['unread', 'in_progress', 'completed'];
+  if (status !== undefined && !VALID_STATUSES.includes(status)) {
+    return res.status(400).json({ error: 'Status must be one of: unread, in_progress, completed' });
+  }
+  if (rating !== undefined && rating !== null && (!Number.isInteger(rating) || rating < 1 || rating > 5)) {
+    return res.status(400).json({ error: 'Rating must be an integer between 1 and 5' });
+  }
+  if (authors !== undefined && !Array.isArray(authors)) {
+    return res.status(400).json({ error: 'Authors must be an array' });
+  }
+
   try {
     // Check ownership
     const existing = await sql`
@@ -59,30 +71,48 @@ async function updateBook(req: AuthRequest, res: VercelResponse) {
       return res.status(404).json({ error: 'Book not found' });
     }
 
-    // Update book fields
-    if (title !== undefined || authors !== undefined || status !== undefined || rating !== undefined || notes !== undefined) {
-      await sql`
-        UPDATE books
-        SET
-          title = COALESCE(${title || null}, title),
-          authors = COALESCE(${JSON.stringify(authors || null)}, authors),
-          status = COALESCE(${status || null}, status),
-          rating = COALESCE(${rating !== undefined ? rating : null}, rating),
-          notes = COALESCE(${notes !== undefined ? notes : null}, notes)
-        WHERE id = ${bookId}
-      `;
+    // Build dynamic update
+    const setClauses: string[] = [];
+    const setValues: any[] = [];
+
+    if (title !== undefined) { setClauses.push('title'); setValues.push(title); }
+    if (authors !== undefined) { setClauses.push('authors'); setValues.push(JSON.stringify(authors)); }
+    if (status !== undefined) { setClauses.push('status'); setValues.push(status); }
+    if (rating !== undefined) { setClauses.push('rating'); setValues.push(rating); }
+    if (notes !== undefined) { setClauses.push('notes'); setValues.push(notes); }
+
+    if (setClauses.length > 0) {
+      // Use individual field updates to avoid COALESCE issues
+      for (let i = 0; i < setClauses.length; i++) {
+        const field = setClauses[i];
+        const value = setValues[i];
+        if (field === 'title') await sql`UPDATE books SET title = ${value} WHERE id = ${bookId}`;
+        else if (field === 'authors') await sql`UPDATE books SET authors = ${value} WHERE id = ${bookId}`;
+        else if (field === 'status') await sql`UPDATE books SET status = ${value} WHERE id = ${bookId}`;
+        else if (field === 'rating') await sql`UPDATE books SET rating = ${value} WHERE id = ${bookId}`;
+        else if (field === 'notes') await sql`UPDATE books SET notes = ${value} WHERE id = ${bookId}`;
+      }
     }
 
-    // Update tags if provided
+    // Update tags if provided — verify ownership
     if (tags !== undefined && Array.isArray(tags)) {
       await sql`DELETE FROM book_tags WHERE book_id = ${bookId}`;
 
-      for (const tagId of tags) {
-        await sql`
-          INSERT INTO book_tags (book_id, tag_id)
-          VALUES (${bookId}, ${tagId})
-          ON CONFLICT DO NOTHING
+      if (tags.length > 0) {
+        const ownedTags = await sql`
+          SELECT id FROM tags WHERE id = ANY(${tags}) AND user_id = ${userId}
         `;
+        const ownedTagIds = new Set(ownedTags.map((t: any) => t.id));
+
+        for (const tagId of tags) {
+          if (ownedTagIds.has(tagId)) {
+            await sql`
+              INSERT INTO book_tags (book_id, tag_id)
+              VALUES (${bookId}, ${tagId})
+              ON CONFLICT DO NOTHING
+            `;
+          }
+        }
       }
     }
 

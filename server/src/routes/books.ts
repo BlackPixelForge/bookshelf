@@ -184,13 +184,21 @@ router.post(
 
       const bookId = result.lastInsertRowid;
 
-      // Add tags if provided
+      // Add tags if provided — verify ownership
       if (tags && tags.length > 0) {
+        const ownedTags = getAll<{ id: number }>(
+          `SELECT id FROM tags WHERE id IN (${tags.map(() => '?').join(',')}) AND user_id = ?`,
+          [...tags, userId]
+        );
+        const ownedTagIds = new Set(ownedTags.map(t => t.id));
+
         for (const tagId of tags) {
-          runQuery(
-            'INSERT OR IGNORE INTO book_tags (book_id, tag_id) VALUES (?, ?)',
-            [bookId, tagId]
-          );
+          if (ownedTagIds.has(tagId)) {
+            runQuery(
+              'INSERT OR IGNORE INTO book_tags (book_id, tag_id) VALUES (?, ?)',
+              [bookId, tagId]
+            );
+          }
         }
       }
 
@@ -269,14 +277,25 @@ router.put(
         runQuery(`UPDATE books SET ${updates.join(', ')} WHERE id = ?`, params);
       }
 
-      // Update tags if provided
+      // Update tags if provided — verify ownership
       if (req.body.tags !== undefined) {
         runQuery('DELETE FROM book_tags WHERE book_id = ?', [bookId]);
-        for (const tagId of req.body.tags) {
-          runQuery(
-            'INSERT OR IGNORE INTO book_tags (book_id, tag_id) VALUES (?, ?)',
-            [bookId, tagId]
+        const tagIds = req.body.tags as number[];
+        if (tagIds.length > 0) {
+          const ownedTags = getAll<{ id: number }>(
+            `SELECT id FROM tags WHERE id IN (${tagIds.map(() => '?').join(',')}) AND user_id = ?`,
+            [...tagIds, userId]
           );
+          const ownedTagIds = new Set(ownedTags.map(t => t.id));
+
+          for (const tagId of tagIds) {
+            if (ownedTagIds.has(tagId)) {
+              runQuery(
+                'INSERT OR IGNORE INTO book_tags (book_id, tag_id) VALUES (?, ?)',
+                [bookId, tagId]
+              );
+            }
+          }
         }
       }
 

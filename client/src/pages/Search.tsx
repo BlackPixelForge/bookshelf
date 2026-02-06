@@ -18,6 +18,7 @@ export function Search() {
   const [error, setError] = useState<string | null>(null);
   const [savingBooks, setSavingBooks] = useState<Set<string>>(new Set());
   const [savedBooks, setSavedBooks] = useState<Set<string>>(new Set());
+  const [failedBooks, setFailedBooks] = useState<Map<string, string>>(new Map());
 
   async function handleSearch(searchQuery: string) {
     if (!searchQuery.trim()) {
@@ -53,7 +54,11 @@ export function Search() {
       });
       setSavedBooks((prev) => new Set(prev).add(book.key));
     } catch (err) {
-      console.error('Failed to add book:', err);
+      setFailedBooks((prev) => {
+        const next = new Map(prev);
+        next.set(book.key, err instanceof Error ? err.message : 'Failed to add book');
+        return next;
+      });
     } finally {
       setSavingBooks((prev) => {
         const next = new Set(prev);
@@ -114,6 +119,7 @@ export function Search() {
               {results.map((book) => {
                 const isSaving = savingBooks.has(book.key);
                 const isSaved = savedBooks.has(book.key);
+                const addError = failedBooks.get(book.key);
 
                 return (
                   <div
@@ -158,13 +164,15 @@ export function Search() {
                       )}
                     </div>
 
-                    <div className="flex-shrink-0">
+                    <div className="flex-shrink-0 flex flex-col items-end gap-1">
                       <button
                         onClick={() => handleAddBook(book)}
                         disabled={isSaving || isSaved}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                           isSaved
                             ? 'bg-green-900/40 text-green-400'
+                            : addError
+                            ? 'bg-red-600 text-white hover:bg-red-700'
                             : 'bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50'
                         }`}
                       >
@@ -172,11 +180,16 @@ export function Search() {
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : isSaved ? (
                           <Check className="h-4 w-4" />
+                        ) : addError ? (
+                          <AlertCircle className="h-4 w-4" />
                         ) : (
                           <Plus className="h-4 w-4" />
                         )}
-                        {isSaved ? 'Added' : 'Add'}
+                        {isSaved ? 'Added' : addError ? 'Retry' : 'Add'}
                       </button>
+                      {addError && (
+                        <p className="text-xs text-red-400 max-w-[150px] text-right">{addError}</p>
+                      )}
                     </div>
                   </div>
                 );

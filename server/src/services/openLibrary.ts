@@ -43,7 +43,7 @@ export async function searchBooks(query: string, limit = 20): Promise<SearchResu
 
 export async function searchByISBN(isbn: string): Promise<SearchResult | null> {
   const cleanISBN = isbn.replace(/[-\s]/g, '');
-  const url = `${BASE_URL}/search.json?isbn=${cleanISBN}&limit=1&fields=key,title,author_name,first_publish_year,isbn,subject,cover_i`;
+  const url = `${BASE_URL}/search.json?isbn=${encodeURIComponent(cleanISBN)}&limit=1&fields=key,title,author_name,first_publish_year,isbn,subject,cover_i`;
 
   const response = await fetch(url);
   if (!response.ok) {

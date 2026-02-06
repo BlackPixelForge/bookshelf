@@ -23,8 +23,14 @@ class ApiClient {
     const response = await fetch(url, config);
 
     if (!response.ok) {
-      const error: ApiError = await response.json();
-      throw new Error(error.error || 'Request failed');
+      let message = 'Request failed';
+      try {
+        const error: ApiError = await response.json();
+        message = error.error || message;
+      } catch {
+        // Non-JSON error response (e.g. 502 gateway error)
+      }
+      throw new Error(message);
     }
 
     return response.json();
