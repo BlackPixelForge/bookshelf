@@ -82,20 +82,20 @@ export function TagManager({
 
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
-      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+      <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
 
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="mx-auto max-w-md w-full bg-white rounded-xl shadow-xl">
-          <div className="flex justify-between items-center p-4 border-b">
-            <Dialog.Title className="text-lg font-semibold">Manage Tags</Dialog.Title>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+        <Dialog.Panel className="mx-auto max-w-md w-full bg-gray-900 rounded-xl shadow-xl border border-gray-800">
+          <div className="flex justify-between items-center p-4 border-b border-gray-800">
+            <Dialog.Title className="text-lg font-semibold text-gray-100">Manage Tags</Dialog.Title>
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-300">
               <X className="h-5 w-5" />
             </button>
           </div>
 
           <div className="p-4">
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Create New Tag
               </label>
               <div className="flex gap-2">
@@ -104,7 +104,7 @@ export function TagManager({
                   value={newTagName}
                   onChange={(e) => setNewTagName(e.target.value)}
                   placeholder="Tag name"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
                 />
                 <div className="relative">
@@ -112,7 +112,7 @@ export function TagManager({
                     type="color"
                     value={newTagColor}
                     onChange={(e) => setNewTagColor(e.target.value)}
-                    className="w-10 h-10 rounded cursor-pointer border border-gray-300"
+                    className="w-10 h-10 rounded cursor-pointer border border-gray-700"
                   />
                 </div>
                 <button
@@ -129,7 +129,7 @@ export function TagManager({
                     key={color}
                     onClick={() => setNewTagColor(color)}
                     className={`w-6 h-6 rounded-full transition-transform ${
-                      newTagColor === color ? 'ring-2 ring-offset-2 ring-gray-400 scale-110' : ''
+                      newTagColor === color ? 'ring-2 ring-offset-2 ring-offset-gray-900 ring-gray-400 scale-110' : ''
                     }`}
                     style={{ backgroundColor: color }}
                   />
@@ -137,8 +137,8 @@ export function TagManager({
               </div>
             </div>
 
-            <div className="border-t pt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="border-t border-gray-800 pt-4">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Your Tags ({tags.length})
               </label>
               {tags.length === 0 ? (
@@ -148,7 +148,7 @@ export function TagManager({
                   {tags.map((tag) => (
                     <div
                       key={tag.id}
-                      className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50"
+                      className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-800"
                     >
                       {editingTag?.id === tag.id ? (
                         <>
@@ -156,19 +156,19 @@ export function TagManager({
                             type="text"
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
-                            className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                            className="flex-1 px-2 py-1 bg-gray-800 border border-gray-700 rounded text-sm text-gray-100"
                             autoFocus
                           />
                           <input
                             type="color"
                             value={editColor}
                             onChange={(e) => setEditColor(e.target.value)}
-                            className="w-8 h-8 rounded cursor-pointer border border-gray-300"
+                            className="w-8 h-8 rounded cursor-pointer border border-gray-700"
                           />
                           <button
                             onClick={handleUpdate}
                             disabled={loading}
-                            className="p-1 text-green-600 hover:text-green-700"
+                            className="p-1 text-green-400 hover:text-green-300"
                           >
                             {loading ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
@@ -178,14 +178,14 @@ export function TagManager({
                           </button>
                           <button
                             onClick={() => setEditingTag(null)}
-                            className="p-1 text-gray-500 hover:text-gray-700"
+                            className="p-1 text-gray-500 hover:text-gray-300"
                           >
                             Cancel
                           </button>
                         </>
                       ) : deleteConfirm === tag.id ? (
                         <>
-                          <span className="flex-1 text-sm text-red-600">Delete "{tag.name}"?</span>
+                          <span className="flex-1 text-sm text-red-400">Delete "{tag.name}"?</span>
                           <button
                             onClick={() => handleDelete(tag.id)}
                             disabled={loading}
@@ -195,7 +195,7 @@ export function TagManager({
                           </button>
                           <button
                             onClick={() => setDeleteConfirm(null)}
-                            className="px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded hover:bg-gray-300"
+                            className="px-2 py-1 bg-gray-700 text-gray-300 text-xs rounded hover:bg-gray-600"
                           >
                             No
                           </button>
@@ -206,16 +206,16 @@ export function TagManager({
                             className="w-4 h-4 rounded-full"
                             style={{ backgroundColor: tag.color }}
                           />
-                          <span className="flex-1 text-sm">{tag.name}</span>
+                          <span className="flex-1 text-sm text-gray-200">{tag.name}</span>
                           <button
                             onClick={() => startEdit(tag)}
-                            className="p-1 text-gray-400 hover:text-gray-600"
+                            className="p-1 text-gray-500 hover:text-gray-300"
                           >
                             <Pencil className="h-4 w-4" />
                           </button>
                           <button
                             onClick={() => setDeleteConfirm(tag.id)}
-                            className="p-1 text-gray-400 hover:text-red-600"
+                            className="p-1 text-gray-500 hover:text-red-400"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
