@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { sql } from '../lib/db';
+import { sql, initDatabase } from '../lib/db';
 import { verifyPassword, generateToken, setCookie } from '../lib/auth';
 import { checkRateLimit } from '../lib/rateLimit';
 
@@ -19,6 +19,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const normalizedEmail = email.toLowerCase().trim();
 
   try {
+    await initDatabase();
     const result = await sql`SELECT id, email, password_hash FROM users WHERE email = ${normalizedEmail}`;
 
     if (result.length === 0) {

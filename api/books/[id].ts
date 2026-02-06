@@ -1,5 +1,5 @@
 import { VercelResponse } from '@vercel/node';
-import { sql } from '../lib/db';
+import { sql, initDatabase } from '../lib/db';
 import { withAuth } from '../lib/auth';
 import { AuthRequest, Book, Tag } from '../lib/types';
 
@@ -12,6 +12,7 @@ async function getBook(req: AuthRequest, res: VercelResponse) {
   }
 
   try {
+    await initDatabase();
     const result = await sql`
       SELECT * FROM books WHERE id = ${bookId} AND user_id = ${userId}
     `;
@@ -62,6 +63,7 @@ async function updateBook(req: AuthRequest, res: VercelResponse) {
   }
 
   try {
+    await initDatabase();
     // Check ownership
     const existing = await sql`
       SELECT id FROM books WHERE id = ${bookId} AND user_id = ${userId}
@@ -146,6 +148,7 @@ async function deleteBook(req: AuthRequest, res: VercelResponse) {
   }
 
   try {
+    await initDatabase();
     const result = await sql`
       DELETE FROM books WHERE id = ${bookId} AND user_id = ${userId}
       RETURNING id
