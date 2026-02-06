@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.9.5",
+    "@vercel/node": "^3.0.21",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.6",
     "express-rate-limit": "^7.1.5",

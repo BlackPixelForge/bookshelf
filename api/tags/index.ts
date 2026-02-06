@@ -11,7 +11,7 @@ async function getTags(req: AuthRequest, res: VercelResponse) {
       SELECT * FROM tags WHERE user_id = ${userId} ORDER BY name
     `;
 
-    return res.json(result.rows);
+    return res.json(result);
   } catch (error) {
     console.error('Error fetching tags:', error);
     return res.status(500).json({ error: 'Failed to fetch tags' });
@@ -32,7 +32,7 @@ async function createTag(req: AuthRequest, res: VercelResponse) {
       SELECT id FROM tags WHERE user_id = ${userId} AND name = ${name}
     `;
 
-    if (existing.rows.length > 0) {
+    if (existing.length > 0) {
       return res.status(400).json({ error: 'Tag already exists' });
     }
 
@@ -42,7 +42,7 @@ async function createTag(req: AuthRequest, res: VercelResponse) {
       RETURNING *
     `;
 
-    return res.status(201).json(result.rows[0]);
+    return res.status(201).json(result[0]);
   } catch (error) {
     console.error('Error creating tag:', error);
     return res.status(500).json({ error: 'Failed to create tag' });
