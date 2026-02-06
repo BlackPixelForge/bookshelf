@@ -21,7 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     // Check if user exists
     const existing = await sql`SELECT id FROM users WHERE email = ${email}`;
-    if (existing.rows.length > 0) {
+    if (existing.length > 0) {
       return res.status(400).json({ error: 'Email already registered' });
     }
 
@@ -34,7 +34,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       RETURNING id, email
     `;
 
-    const user = result.rows[0];
+    const user = result[0];
     const token = generateToken(user.id, user.email);
 
     setCookie(res, 'auth_token', token);

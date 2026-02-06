@@ -40,7 +40,7 @@ export const cookieOptions = {
 
 // Middleware to verify JWT token
 export function withAuth(
-  handler: (req: AuthRequest, res: VercelResponse) => Promise<void>
+  handler: (req: AuthRequest, res: VercelResponse) => Promise<void | VercelResponse>
 ) {
   return async (req: VercelRequest, res: VercelResponse) => {
     // Parse cookies manually

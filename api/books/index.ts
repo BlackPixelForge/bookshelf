@@ -31,11 +31,6 @@ async function getBooks(req: AuthRequest, res: VercelResponse) {
       conditions.push(sql`(b.title ILIKE ${searchTerm} OR b.authors::text ILIKE ${searchTerm})`);
     }
 
-    // Combine conditions
-    const whereClause = conditions.length > 0
-      ? sql` WHERE ${sql.unsafe(conditions.map((_, i) => `condition_${i}`).join(' AND '))}`
-      : sql``;
-
     const result = await sql`
       SELECT DISTINCT b.* FROM books b
       ${tag ? sql`JOIN book_tags bt ON b.id = bt.book_id` : sql``}
@@ -46,7 +41,7 @@ async function getBooks(req: AuthRequest, res: VercelResponse) {
       ORDER BY b.added_at DESC
     `;
 
-    const books = result.rows as Book[];
+    const books = result as Book[];
 
     // Fetch tags for each book
     const booksWithTags = await Promise.all(
@@ -60,7 +55,7 @@ async function getBooks(req: AuthRequest, res: VercelResponse) {
 
         return {
           ...book,
-          tags: tagsResult.rows as Tag[],
+          tags: tagsResult as Tag[],
         };
       })
     );
@@ -105,7 +100,7 @@ async function addBook(req: AuthRequest, res: VercelResponse) {
       RETURNING *
     `;
 
-    const book = result.rows[0] as Book;
+    const book = result[0] as Book;
 
     // Add tags if provided
     if (tags && Array.isArray(tags) && tags.length > 0) {
@@ -128,7 +123,7 @@ async function addBook(req: AuthRequest, res: VercelResponse) {
 
     return res.status(201).json({
       ...book,
-      tags: tagsResult.rows as Tag[],
+      tags: tagsResult as Tag[],
     });
   } catch (error) {
     console.error('Error adding book:', error);

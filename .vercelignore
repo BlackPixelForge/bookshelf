@@ -1,0 +1,7 @@
+# Exclude library/utility files from being treated as serverless functions
+api/lib/**
+server/**
+*.md
+.git
+.gitignore
+node_modules

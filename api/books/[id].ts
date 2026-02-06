@@ -16,11 +16,11 @@ async function getBook(req: AuthRequest, res: VercelResponse) {
       SELECT * FROM books WHERE id = ${bookId} AND user_id = ${userId}
     `;
 
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       return res.status(404).json({ error: 'Book not found' });
     }
 
-    const book = result.rows[0] as Book;
+    const book = result[0] as Book;
 
     const tagsResult = await sql`
       SELECT t.id, t.name, t.color
@@ -31,7 +31,7 @@ async function getBook(req: AuthRequest, res: VercelResponse) {
 
     return res.json({
       ...book,
-      tags: tagsResult.rows as Tag[],
+      tags: tagsResult as Tag[],
     });
   } catch (error) {
     console.error('Error fetching book:', error);
@@ -55,40 +55,22 @@ async function updateBook(req: AuthRequest, res: VercelResponse) {
       SELECT id FROM books WHERE id = ${bookId} AND user_id = ${userId}
     `;
 
-    if (existing.rows.length === 0) {
+    if (existing.length === 0) {
       return res.status(404).json({ error: 'Book not found' });
     }
 
-    // Build update query
-    const updates: string[] = [];
-    const values: any[] = [];
-
-    if (title !== undefined) {
-      updates.push(`title = $${updates.length + 1}`);
-      values.push(title);
-    }
-    if (authors !== undefined) {
-      updates.push(`authors = $${updates.length + 1}`);
-      values.push(JSON.stringify(authors));
-    }
-    if (status !== undefined) {
-      updates.push(`status = $${updates.length + 1}`);
-      values.push(status);
-    }
-    if (rating !== undefined) {
-      updates.push(`rating = $${updates.length + 1}`);
-      values.push(rating);
-    }
-    if (notes !== undefined) {
-      updates.push(`notes = $${updates.length + 1}`);
-      values.push(notes);
-    }
-
-    if (updates.length > 0) {
-      await sql.query(
-        `UPDATE books SET ${updates.join(', ')} WHERE id = $${updates.length + 1}`,
-        [...values, bookId]
-      );
+    // Update book fields
+    if (title !== undefined || authors !== undefined || status !== undefined || rating !== undefined || notes !== undefined) {
+      await sql`
+        UPDATE books
+        SET
+          title = COALESCE(${title || null}, title),
+          authors = COALESCE(${JSON.stringify(authors || null)}, authors),
+          status = COALESCE(${status || null}, status),
+          rating = COALESCE(${rating !== undefined ? rating : null}, rating),
+          notes = COALESCE(${notes !== undefined ? notes : null}, notes)
+        WHERE id = ${bookId}
+      `;
     }
 
     // Update tags if provided
@@ -106,7 +88,7 @@ async function updateBook(req: AuthRequest, res: VercelResponse) {
 
     // Fetch updated book
     const result = await sql`SELECT * FROM books WHERE id = ${bookId}`;
-    const book = result.rows[0] as Book;
+    const book = result[0] as Book;
 
     const tagsResult = await sql`
       SELECT t.id, t.name, t.color
@@ -117,7 +99,7 @@ async function updateBook(req: AuthRequest, res: VercelResponse) {
 
     return res.json({
       ...book,
-      tags: tagsResult.rows as Tag[],
+      tags: tagsResult as Tag[],
     });
   } catch (error) {
     console.error('Error updating book:', error);
@@ -139,7 +121,7 @@ async function deleteBook(req: AuthRequest, res: VercelResponse) {
       RETURNING id
     `;
 
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       return res.status(404).json({ error: 'Book not found' });
     }
 

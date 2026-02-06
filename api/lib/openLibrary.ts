@@ -37,7 +37,7 @@ export async function searchBooks(query: string, limit = 20): Promise<SearchResu
     throw new Error(`Open Library API error: ${response.status}`);
   }
 
-  const data: OpenLibrarySearchResponse = await response.json();
+  const data = await response.json() as OpenLibrarySearchResponse;
   return data.docs.map(mapWorkToSearchResult);
 }
 
@@ -50,7 +50,7 @@ export async function searchByISBN(isbn: string): Promise<SearchResult | null> {
     throw new Error(`Open Library API error: ${response.status}`);
   }
 
-  const data: OpenLibrarySearchResponse = await response.json();
+  const data = await response.json() as OpenLibrarySearchResponse;
   if (data.docs.length === 0) {
     return null;
   }

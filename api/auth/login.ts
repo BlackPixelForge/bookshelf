@@ -17,11 +17,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const result = await sql`SELECT * FROM users WHERE email = ${email}`;
 
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const user = result.rows[0] as User;
+    const user = result[0] as User;
 
     const valid = await verifyPassword(password, user.password_hash);
     if (!valid) {

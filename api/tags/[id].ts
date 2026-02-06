@@ -18,7 +18,7 @@ async function updateTag(req: AuthRequest, res: VercelResponse) {
       SELECT id FROM tags WHERE id = ${tagId} AND user_id = ${userId}
     `;
 
-    if (existing.rows.length === 0) {
+    if (existing.length === 0) {
       return res.status(404).json({ error: 'Tag not found' });
     }
 
@@ -29,33 +29,24 @@ async function updateTag(req: AuthRequest, res: VercelResponse) {
         WHERE user_id = ${userId} AND name = ${name} AND id != ${tagId}
       `;
 
-      if (conflict.rows.length > 0) {
+      if (conflict.length > 0) {
         return res.status(400).json({ error: 'Tag name already exists' });
       }
     }
 
-    // Build update
-    const updates: string[] = [];
-    const values: any[] = [];
-
-    if (name !== undefined) {
-      updates.push(`name = $${updates.length + 1}`);
-      values.push(name);
-    }
-    if (color !== undefined) {
-      updates.push(`color = $${updates.length + 1}`);
-      values.push(color);
-    }
-
-    if (updates.length > 0) {
-      await sql.query(
-        `UPDATE tags SET ${updates.join(', ')} WHERE id = $${updates.length + 1}`,
-        [...values, tagId]
-      );
+    // Update tag
+    if (name !== undefined || color !== undefined) {
+      await sql`
+        UPDATE tags
+        SET
+          name = COALESCE(${name || null}, name),
+          color = COALESCE(${color || null}, color)
+        WHERE id = ${tagId}
+      `;
     }
 
     const result = await sql`SELECT * FROM tags WHERE id = ${tagId}`;
-    return res.json(result.rows[0]);
+    return res.json(result[0]);
   } catch (error) {
     console.error('Error updating tag:', error);
     return res.status(500).json({ error: 'Failed to update tag' });
@@ -76,7 +67,7 @@ async function deleteTag(req: AuthRequest, res: VercelResponse) {
       RETURNING id
     `;
 
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       return res.status(404).json({ error: 'Tag not found' });
     }
 
