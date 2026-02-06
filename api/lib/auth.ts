@@ -3,9 +3,17 @@ import jwt from 'jsonwebtoken';
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { AuthRequest } from './types';
 
-const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production'
-  ? (() => { throw new Error('JWT_SECRET environment variable is required in production'); })()
-  : 'bookshelf-secret-change-in-production');
+// Lazy JWT_SECRET — avoids crashing the module at load time
+// when JWT_SECRET is not yet configured (same pattern as db.ts)
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (secret) return secret;
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET environment variable is required in production');
+  }
+  return 'bookshelf-secret-change-in-production';
+}
+
 const SALT_ROUNDS = 12;
 
 export async function hashPassword(password: string): Promise<string> {
@@ -19,14 +27,14 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 export function generateToken(userId: number, email: string): string {
   return jwt.sign(
     { id: userId, email },
-    JWT_SECRET,
+    getJwtSecret(),
     { expiresIn: '7d' }
   );
 }
 
 export function verifyToken(token: string): { id: number; email: string } | null {
   try {
-    return jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }) as { id: number; email: string };
+    return jwt.verify(token, getJwtSecret(), { algorithms: ['HS256'] }) as { id: number; email: string };
   } catch {
     return null;
   }
@@ -46,32 +54,37 @@ export function withAuth(
   handler: (req: AuthRequest, res: VercelResponse) => Promise<void | VercelResponse>
 ) {
   return async (req: VercelRequest, res: VercelResponse) => {
-    // Parse cookies manually
-    const cookies: Record<string, string> = {};
-    const cookieHeader = req.headers.cookie;
-    if (cookieHeader) {
-      cookieHeader.split(';').forEach(cookie => {
-        const idx = cookie.indexOf('=');
-        if (idx === -1) return;
-        const key = cookie.substring(0, idx).trim();
-        const value = cookie.substring(idx + 1).trim();
-        cookies[key] = value;
-      });
+    try {
+      // Parse cookies manually
+      const cookies: Record<string, string> = {};
+      const cookieHeader = req.headers.cookie;
+      if (cookieHeader) {
+        cookieHeader.split(';').forEach(cookie => {
+          const idx = cookie.indexOf('=');
+          if (idx === -1) return;
+          const key = cookie.substring(0, idx).trim();
+          const value = cookie.substring(idx + 1).trim();
+          cookies[key] = value;
+        });
+      }
+
+      const token = cookies.auth_token;
+
+      if (!token) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      const decoded = verifyToken(token);
+      if (!decoded) {
+        return res.status(401).json({ error: 'Invalid or expired token' });
+      }
+
+      (req as AuthRequest).user = decoded;
+      return await handler(req as AuthRequest, res);
+    } catch (error) {
+      console.error('Auth middleware error:', (error as Error).message);
+      return res.status(500).json({ error: 'Internal server error' });
     }
-
-    const token = cookies.auth_token;
-
-    if (!token) {
-      return res.status(401).json({ error: 'Authentication required' });
-    }
-
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return res.status(401).json({ error: 'Invalid or expired token' });
-    }
-
-    (req as AuthRequest).user = decoded;
-    return handler(req as AuthRequest, res);
   };
 }
 
